@@ -1,2 +1,2 @@
-# SS-Assembler-Java
-Java translation of my SS Assembler Project
+# Two Pass Assembler (Java)
+Java translation of my Two-Pass-Assembler Project
