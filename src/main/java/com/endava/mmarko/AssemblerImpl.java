@@ -181,7 +181,7 @@ class AssemblerImpl implements Assembler {
   }
 
   private void printSection(SectionInfo info, StringBuilder tempOutput) {
-    if (info != null) {
+    if (info.isValid()) {
       String formattedBytes = format(info.getBytes());
       tempOutput.append(formattedBytes);
       printRelocationTable(info, tempOutput);

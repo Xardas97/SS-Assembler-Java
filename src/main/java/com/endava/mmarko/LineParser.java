@@ -19,7 +19,6 @@ class LineParser {
   private LineType type;
 
   private final List<Integer> values;
-  private int value;
   private String symbol;
   private String sectionFlags;
 
@@ -70,19 +69,23 @@ class LineParser {
   }
 
   private String parseLabel(String line) throws SyntaxError {
-    String[] split = line.split(":");
-    switch(split.length) {
-      case 1: line = line.trim(); break;
-      case 2: {
+    if (line.contains(":")) {
+      String[] split = line.split(":");
+      if (split.length == 1 || split.length == 2) {
+        if (split.length == 2) {
+          line = split[1];
+        } else {
+          line = "";
+        }
         label = split[0].trim();
-        line = split[1].trim();
         //label can't be empty and can't contain spaces
         if (label.isEmpty() || label.contains(" \t")) throw new SyntaxError("Bad Label Name");
-        break;
       }
-      default: throw new SyntaxError("Unexpected Character: ':'");
+      else {
+        throw new SyntaxError("Unexpected Character: ':'");
+      }
     }
-    return line;
+    return line.trim();
   }
 
   private boolean parseIfSection(String line) throws SyntaxError {
@@ -118,7 +121,11 @@ class LineParser {
         switch (directive) {
           case WORD: case BYTE: {
             for (String param : parameterHelper.getParams()) {
-              int value = Integer.parseInt(param);
+              int value = 0;
+              try {
+                NumberParser.parseInt(param);
+              }
+              catch(NumberFormatException ignored) { }
               for (EquSymbol sym : equTable)
                 if (param.equals(sym.getLabel())) {
                   value = sym.getValue();
@@ -128,11 +135,11 @@ class LineParser {
             }
             break;
           }
-          case SKIP: case ALIGN: value = Integer.parseInt(parameterHelper.getParam(0)); break;
+          case SKIP: case ALIGN: values.add(NumberParser.parseInt(parameterHelper.getParam(0))); break;
           case EQU: {
             if ("".equals(parameterHelper.getParam(1))) throw new SyntaxError("Missing Parameter");
             symbol = parameterHelper.getParam(0);
-            value = Integer.parseInt(parameterHelper.getParam(1));
+            values.add(NumberParser.parseInt(parameterHelper.getParam(1)));
             if (symbol.length() > 23) throw new SyntaxError("Symbol name too long, max characters: 23");
             break;
           }
@@ -168,7 +175,7 @@ class LineParser {
   }
 
   int getValue() {
-    return value;
+    return values.get(0);
   }
 
   String getSymbol() {

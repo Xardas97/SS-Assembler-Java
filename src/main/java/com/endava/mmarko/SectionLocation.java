@@ -13,6 +13,10 @@ class SectionLocation {
     return id < 0;
   }
 
+  boolean isValid() {
+    return !isInvalid();
+  }
+
    void incrementSection() {
     id++;
     offset = 0;

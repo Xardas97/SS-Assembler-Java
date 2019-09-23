@@ -2,6 +2,19 @@ package com.endava.mmarko;
 
 class NumberParser {
 
+  static int parseInt(String str) {
+    if (str.length() > 2 && "0x".equals(str.substring(0, 2))) {
+      return Integer.parseInt(str.substring(2), 16);
+    }
+    if(str.length() > 2 && "0b".equals(str.substring(0, 2))) {
+      return Integer.parseInt(str.substring(2), 2);
+    }
+    if(str.length() > 1 && "0".equals(str.substring(0, 1))) {
+      return Integer.parseInt(str.substring(1), 8);
+    }
+    return Integer.parseInt(str);
+  }
+
   static String swapBytes(String str) {
     if (str.length() != 4) {
       return str;
@@ -34,9 +47,14 @@ class NumberParser {
 
     StringBuilder result = new StringBuilder(Long.toHexString(value));
 
-    int missingChars = byteSize * 2 - result.length();
-    result.insert(0, "0".repeat(missingChars));
+    if(result.length() > byteSize * 2) {
+      return result.toString().substring(0, byteSize * 2);
+    }
+    else {
+      int missingChars = byteSize * 2 - result.length();
+      result.insert(0, "0".repeat(missingChars));
 
-    return result.toString();
+      return result.toString();
+    }
   }
 }

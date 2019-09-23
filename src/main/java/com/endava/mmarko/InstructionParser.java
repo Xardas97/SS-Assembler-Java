@@ -99,7 +99,7 @@ class InstructionParser {
     instr = instr.trim();
 
     //instruction name ends with the first space
-    int pos = instr.indexOf(" ,\t");
+    int pos = indexOfFirstWhitespace(instr);
     if (pos >= 0) {
       instrName = instr.substring(0, pos);
       instr = instr.substring(pos).trim();
@@ -164,6 +164,15 @@ class InstructionParser {
       }
     }
     return instrCode;
+  }
+
+  private int indexOfFirstWhitespace(String str) {
+    for(int i = 0; i < str.length(); i++) {
+      if(Character.isWhitespace(str.charAt(i))) {
+        return i;
+      }
+    }
+    return -1;
   }
 
   private void processParam(int offset, ParameterHelper parameterHelper, int paramIndex) throws SyntaxError {
@@ -264,47 +273,20 @@ class InstructionParser {
 
     if (firstChar == '*') {
       paramStruct.addTypeCode = ADDRESSING_MAP.get("mem");
-      paramStruct.value = Integer.parseInt(param.substring(1));
+      paramStruct.value = NumberParser.parseInt(param.substring(1));
       return paramStruct;
     }
 
     if (firstChar == 'r' && Character.isDigit(param.charAt(1)) ||
-        (("pc".equals(param.substring(0, 2)) || "sp".equals(param.substring(0, 2)))
+        ((param.length() > 1 && ("pc".equals(param.substring(0, 2)) || "sp".equals(param.substring(0, 2))))
             && (param.length() == 2 || param.charAt(2) == '['))) {
+
       if (REGISTER_MAP.get(param.substring(0, 2)) == null)
         throw new SyntaxError("Unknown register: " + param.substring(0, 2));
       else paramStruct.regCode = REGISTER_MAP.get(param.substring(0, 2));
 
-      if (!shortInstr) {
-        if (param.length() == 2) {
-          paramStruct.addTypeCode = ADDRESSING_MAP.get("reg");
-          return paramStruct;
-        }
-      } else {
-        if (param.length() == 3) {
-          switch (param.charAt(2)) {
-            case 'l': paramStruct.regHigh = false; break;
-            case 'h': paramStruct.regHigh = true; break;
-            default: throw new SyntaxError("Expected 'h' or 'l' reg specifier");
-          }
-          paramStruct.addTypeCode = ADDRESSING_MAP.get("reg");
-          return paramStruct;
-        }
-      }
-
-      if (param.charAt(2) != '[') throw new SyntaxError("'[' expected");
-      if (param.charAt(param.length() - 1) != ']') throw new SyntaxError("']' expected");
-      param = param.substring(3, param.length() - 1);
-      if (param.isEmpty()) {
-        paramStruct.addTypeCode = ADDRESSING_MAP.get("regind");
-        paramStruct.regHigh = false;
-        return paramStruct;
-      }
-      if (Character.isDigit(param.charAt(0)) || param.charAt(1) == '-') paramStruct.value = Integer.parseInt(param);
-      else paramStruct.symbol = param;
-      if (shortInstr) paramStruct.addTypeCode = ADDRESSING_MAP.get("regind8");
-      else paramStruct.addTypeCode = ADDRESSING_MAP.get("regind16");
-      return paramStruct;
+      if (getRegdirParam(param, paramStruct)) return paramStruct;
+      return getRegindParam(param, paramStruct);
     }
 
     if (!Character.isDigit(firstChar)) {
@@ -314,6 +296,42 @@ class InstructionParser {
     }
 
     throw new SyntaxError("Bad Parameter");
+  }
+
+  private Parameter getRegindParam(String param, Parameter paramStruct) throws SyntaxError {
+    if (param.charAt(2) != '[') throw new SyntaxError("'[' expected");
+    if (param.charAt(param.length() - 1) != ']') throw new SyntaxError("']' expected");
+    param = param.substring(3, param.length() - 1);
+    if (param.isEmpty()) {
+      paramStruct.addTypeCode = ADDRESSING_MAP.get("regind");
+      paramStruct.regHigh = false;
+      return paramStruct;
+    }
+    if (Character.isDigit(param.charAt(0)) || param.charAt(0) == '-') paramStruct.value = NumberParser.parseInt(param);
+    else paramStruct.symbol = param;
+    if (shortInstr) paramStruct.addTypeCode = ADDRESSING_MAP.get("regind8");
+    else paramStruct.addTypeCode = ADDRESSING_MAP.get("regind16");
+    return paramStruct;
+  }
+
+  private boolean getRegdirParam(String param, Parameter paramStruct) throws SyntaxError {
+    if (!shortInstr) {
+      if (param.length() == 2) {
+        paramStruct.addTypeCode = ADDRESSING_MAP.get("reg");
+        return true;
+      }
+    } else {
+      if (param.length() == 3) {
+        switch (param.charAt(2)) {
+          case 'l': paramStruct.regHigh = false; break;
+          case 'h': paramStruct.regHigh = true; break;
+          default: throw new SyntaxError("Expected 'h' or 'l' reg specifier");
+        }
+        paramStruct.addTypeCode = ADDRESSING_MAP.get("reg");
+        return true;
+      }
+    }
+    return false;
   }
 
   private Parameter getRegindParameter(String param, Parameter paramStruct) {
@@ -327,7 +345,7 @@ class InstructionParser {
   private Parameter getImmediateParameter(String param, Parameter paramStruct) {
     paramStruct.addTypeCode = ADDRESSING_MAP.get("imm");
     if (param.charAt(0) == '&') paramStruct.symbol = param.substring(1);
-    else paramStruct.value = Integer.parseInt(param);
+    else paramStruct.value = NumberParser.parseInt(param);
     return paramStruct;
   }
 
