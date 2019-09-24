@@ -1,4 +1,4 @@
-package com.endava.mmarko;
+package com.endava.mmarko.assembler.tables;
 
 class Section {
   private final String label;

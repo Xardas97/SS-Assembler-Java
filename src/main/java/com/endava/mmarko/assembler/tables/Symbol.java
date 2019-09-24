@@ -1,6 +1,9 @@
-package com.endava.mmarko;
+package com.endava.mmarko.assembler.tables;
 
-class Symbol {
+import com.endava.mmarko.assembler.parsers.NumberParser;
+import com.endava.mmarko.assembler.SectionLocation;
+
+public class Symbol {
   private final String label;
   private final int section;
   private final int offset;
@@ -35,11 +38,11 @@ class Symbol {
     return ret;
   }
 
-  String getLabel() {
+  public String getLabel() {
     return label;
   }
 
-  int getSection() {
+  public int getSection() {
     return section;
   }
 

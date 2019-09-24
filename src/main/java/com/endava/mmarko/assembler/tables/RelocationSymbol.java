@@ -1,12 +1,14 @@
-package com.endava.mmarko;
+package com.endava.mmarko.assembler.tables;
 
-class RelocationSymbol {
+import com.endava.mmarko.assembler.parsers.NumberParser;
+
+public class RelocationSymbol {
   private final int offset;
   private final String type;
   private final int section;
   private final String symbol;
 
-  RelocationSymbol(int offset, String type, int section, String symbol) {
+  public RelocationSymbol(int offset, String type, int section, String symbol) {
     this.offset = offset;
     this.type = type;
     this.section = section;

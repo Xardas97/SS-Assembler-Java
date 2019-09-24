@@ -1,8 +1,11 @@
-package com.endava.mmarko;
+package com.endava.mmarko.assembler.parsers;
 
-class NumberParser {
+import org.springframework.stereotype.Component;
 
-  static int parseInt(String str) {
+@Component
+public class NumberParser {
+
+  int parseInt(String str) {
     if (str.length() > 2 && "0x".equals(str.substring(0, 2))) {
       return Integer.parseInt(str.substring(2), 16);
     }
@@ -15,14 +18,14 @@ class NumberParser {
     return Integer.parseInt(str);
   }
 
-  static String swapBytes(String str) {
+  public String swapBytes(String str) {
     if (str.length() != 4) {
       return str;
     }
     return str.substring(2) + str.substring(0, 2);
   }
 
-  static String format(String str) {
+  public String format(String str) {
     StringBuilder result = new StringBuilder();
     int breakPoint = 68;
 
@@ -42,7 +45,7 @@ class NumberParser {
     return result.toString();
   }
 
-  static String toHex(long value, int byteSize) {
+  public String toHex(long value, int byteSize) {
     value = value % (long) Math.pow(2, byteSize * 8);
 
     StringBuilder result = new StringBuilder(Long.toHexString(value));
@@ -57,4 +60,5 @@ class NumberParser {
       return result.toString();
     }
   }
+
 }

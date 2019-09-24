@@ -1,10 +1,10 @@
-package com.endava.mmarko;
+package com.endava.mmarko.assembler.tables;
 
-class EquSymbol {
+public class EquSymbol {
   private final String label;
   private final int value;
 
-  EquSymbol(String label, int value) {
+  public EquSymbol(String label, int value) {
     this.label = label;
     this.value = value;
   }
@@ -14,11 +14,11 @@ class EquSymbol {
     return label + "\t\t\t" + value + "\t\t\t";
   }
 
-  String getLabel() {
+  public String getLabel() {
     return label;
   }
 
-  int getValue() {
+  public int getValue() {
     return value;
   }
 }

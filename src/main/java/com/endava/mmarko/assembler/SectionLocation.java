@@ -1,6 +1,6 @@
-package com.endava.mmarko;
+package com.endava.mmarko.assembler;
 
-class SectionLocation {
+public class SectionLocation {
   private int id;
   private int offset;
 
@@ -30,11 +30,11 @@ class SectionLocation {
     offset += increment;
   }
 
-  int getId() {
+  public int getId() {
     return id;
   }
 
-  int getOffset() {
+  public int getOffset() {
     return offset;
   }
 }

@@ -1,12 +1,14 @@
-package com.endava.mmarko;
+package com.endava.mmarko.assembler.parsers;
+
+import com.endava.mmarko.assembler.SyntaxError;
 
 import java.util.LinkedList;
 import java.util.List;
 
-class ParameterHelper {
+class ParameterParser {
   private final List<String> params;
 
-  ParameterHelper(String line) throws SyntaxError {
+  ParameterParser(String line) throws SyntaxError {
     params = new LinkedList<>();
 
     for(String param: line.split(",")) {

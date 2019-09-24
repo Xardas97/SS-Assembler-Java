@@ -1,4 +1,6 @@
-package com.endava.mmarko;
+package com.endava.mmarko.assembler;
+
+import com.endava.mmarko.assembler.tables.RelocationSymbol;
 
 import java.util.LinkedList;
 import java.util.List;

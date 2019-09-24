@@ -1,16 +1,16 @@
-package com.endava.mmarko;
+package com.endava.mmarko.assembler.tables;
 
 import java.util.LinkedList;
 import java.util.List;
 
-class SectionTable {
+public class SectionTable {
   private final List<Section> sections;
 
-  SectionTable() {
+  public SectionTable() {
     sections = new LinkedList<>();
   }
 
-  void add(String label, int section, String flags) {
+  public void add(String label, int section, String flags) {
     sections.add(new Section(label, section, flags));
   }
 

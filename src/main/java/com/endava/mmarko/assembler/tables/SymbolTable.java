@@ -1,24 +1,27 @@
-package com.endava.mmarko;
+package com.endava.mmarko.assembler.tables;
+
+import com.endava.mmarko.assembler.SectionLocation;
+import com.endava.mmarko.assembler.SyntaxError;
 
 import java.util.LinkedList;
 import java.util.List;
 
-class SymbolTable {
+public class SymbolTable {
   private final List<Symbol> symbols;
 
-  SymbolTable() {
+  public SymbolTable() {
     symbols = new LinkedList<>();
   }
 
-  void add(String label, SectionLocation location) {
+  public void add(String label, SectionLocation location) {
     add(label, location, false);
   }
 
-  void add(String label, SectionLocation location, boolean global) {
+  public void add(String label, SectionLocation location, boolean global) {
     symbols.add(new Symbol(label, location, global));
   }
 
-  void setGlobal(String symbol) throws SyntaxError {
+  public void setGlobal(String symbol) throws SyntaxError {
     for (Symbol s : symbols) {
       if (s.getLabel().equals(symbol)) {
         s.setGlobal();
@@ -28,7 +31,7 @@ class SymbolTable {
     throw new SyntaxError("Symbol not defined");
   }
 
-  Symbol find(String label) {
+  public Symbol find(String label) {
     for (Symbol s : symbols) {
       if (s.getLabel().equals(label)) return s;
     }
