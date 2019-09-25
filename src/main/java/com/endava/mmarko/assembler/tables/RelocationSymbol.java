@@ -19,7 +19,7 @@ public class RelocationSymbol {
   public String toString() {
     String tabs = "\t\t";
 
-    String ret = "    " + NumberParser.toHex(offset, 5) + tabs + type + tabs;
+    String ret = "    " + NumberParser.toHexStatic(offset, 5) + tabs + type + tabs;
     if (section >= 0) {
       ret += Integer.toString(section);
     }

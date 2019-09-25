@@ -18,14 +18,14 @@ import java.util.List;
 
 @Component
 public class AssemblerImpl implements Assembler {
-  private LineParser lineParser;
-  private InstructionParser instrParser;
-  private NumberParser numberParser;
+  private final LineParser lineParser;
+  private final InstructionParser instrParser;
+  private final NumberParser numberParser;
 
   static class Tables {
-    SymbolTable symbolTable = new SymbolTable();
-    SectionTable sectionTable = new SectionTable();
-    List<EquSymbol> equTable = new LinkedList<>();
+    final SymbolTable symbolTable = new SymbolTable();
+    final SectionTable sectionTable = new SectionTable();
+    final List<EquSymbol> equTable = new LinkedList<>();
   }
 
   @Autowired

@@ -1,4 +1,4 @@
-package com.endava.mmarko;
+package com.endava.mmarko.assembler;
 
 import static org.junit.Assert.assertTrue;
 

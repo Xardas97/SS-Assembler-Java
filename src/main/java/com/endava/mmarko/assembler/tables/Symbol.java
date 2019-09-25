@@ -1,7 +1,7 @@
 package com.endava.mmarko.assembler.tables;
 
-import com.endava.mmarko.assembler.parsers.NumberParser;
 import com.endava.mmarko.assembler.SectionLocation;
+import com.endava.mmarko.assembler.parsers.NumberParser;
 
 public class Symbol {
   private final String label;
@@ -30,7 +30,7 @@ public class Symbol {
     if (section == -1) ret += "und";
     else ret += section;
 
-    ret += (tabs + NumberParser.toHex(offset, 5) + tabs);
+    ret += (tabs + NumberParser.toHexStatic(offset, 5) + tabs);
 
     if (global) ret += "global";
     else ret += "local";

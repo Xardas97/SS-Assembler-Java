@@ -46,19 +46,19 @@ public class NumberParser {
   }
 
   public String toHex(long value, int byteSize) {
+    return NumberParser.toHexStatic(value, byteSize);
+  }
+
+  public static String toHexStatic(long value, int byteSize) {
+    if (byteSize < 0) throw new IllegalArgumentException();
     value = value % (long) Math.pow(2, byteSize * 8);
 
     StringBuilder result = new StringBuilder(Long.toHexString(value));
 
-    if(result.length() > byteSize * 2) {
-      return result.toString().substring(0, byteSize * 2);
-    }
-    else {
-      int missingChars = byteSize * 2 - result.length();
-      result.insert(0, "0".repeat(missingChars));
+    int missingChars = byteSize * 2 - result.length();
+    result.insert(0, "0".repeat(missingChars));
 
-      return result.toString();
-    }
+    return result.toString();
   }
 
 }

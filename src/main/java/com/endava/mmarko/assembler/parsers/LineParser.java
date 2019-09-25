@@ -17,11 +17,13 @@ public class LineParser {
     @Override public String toString() { return super.toString().toLowerCase(); }
   }
 
-  private NumberParser numberParser;
+  private final NumberParser numberParser;
+  private final ParameterParser parameterParser;
 
   @Autowired
-  public LineParser(NumberParser numberParser) {
+  public LineParser(NumberParser numberParser, ParameterParser parameterParser) {
     this.numberParser = numberParser;
+    this.parameterParser = parameterParser;
   }
 
   public static class ParsedLineData {
@@ -95,7 +97,10 @@ public class LineParser {
         }
         data.label = split[0].trim();
         //label can't be empty and can't contain spaces
-        if (data.label.isEmpty() || data.label.contains(" \t")) throw new SyntaxError("Bad Label Name");
+        if (data.label.isEmpty() || data.label.contains(".") ||
+            data.label.contains(" ") || data.label.contains("\t")) {
+          throw new SyntaxError("Bad Label Name");
+        }
       }
       else {
         throw new SyntaxError("Unexpected Character: ':'");
@@ -112,10 +117,15 @@ public class LineParser {
         switch (section) {
           case SECTION:
             line = line.substring(data.sectionName.length());
-            ParameterParser parameterParser = new ParameterParser(line);
-            data.sectionName = parameterParser.getParam(0);
-            if (data.sectionName.length() > 23) throw new SyntaxError("Symbol name too long, max characters: 23");
-            data.sectionFlags = parameterParser.getParam(1);
+            List<String> params = parameterParser.parse(line);
+            data.sectionName = params.get(0);
+            if (params.size() != 2) {
+              throw new SyntaxError("Wrong number of parameters, expected: 2");
+            }
+            if (data.sectionName.length() > 23) {
+              throw new SyntaxError("Symbol name too long, max characters: 23");
+            }
+            data.sectionFlags = params.get(1);
             break;
           case TEXT: data.sectionFlags = "rx";  break;
           case DATA: data.sectionFlags = "rw"; break;
@@ -134,13 +144,13 @@ public class LineParser {
         data.type = LineType.DIRECTIVE;
         data.directiveName = directive.toString();
         line = line.substring(data.directiveName.length());
-        ParameterParser parameterParser = new ParameterParser(line);
+        List<String> params = parameterParser.parse(line);
         switch (directive) {
           case WORD: case BYTE: {
-            for (String param : parameterParser.getParams()) {
+            for (String param : params) {
               int value = 0;
               try {
-                numberParser.parseInt(param);
+                value = numberParser.parseInt(param);
               }
               catch(NumberFormatException ignored) { }
               for (EquSymbol sym : equTable)
@@ -153,15 +163,15 @@ public class LineParser {
             break;
           }
           case SKIP: case ALIGN:
-            data.values.add(numberParser.parseInt(parameterParser.getParam(0))); break;
+            data.values.add(numberParser.parseInt(params.get(0))); break;
           case EQU: {
-            if ("".equals(parameterParser.getParam(1))) throw new SyntaxError("Missing Parameter");
-            data.symbol = parameterParser.getParam(0);
-            data.values.add(numberParser.parseInt(parameterParser.getParam(1)));
+            if ("".equals(params.get(1))) throw new SyntaxError("Missing Parameter");
+            data.symbol = params.get(0);
+            data.values.add(numberParser.parseInt(params.get(1)));
             if (data.symbol.length() > 23) throw new SyntaxError("Symbol name too long, max characters: 23");
             break;
           }
-          case EXTERN: case GLOBAL: data.symbol = parameterParser.getParam(0); break;
+          case EXTERN: case GLOBAL: data.symbol = params.get(0); break;
         }
         return true;
       }

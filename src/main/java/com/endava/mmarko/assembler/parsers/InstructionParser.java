@@ -19,10 +19,12 @@ public class InstructionParser {
   private static final List<String> ONE_PARAM_INSTRUCTIONS;
 
   private NumberParser numberParser;
+  private ParameterParser parameterParser;
   
   @Autowired
-  public InstructionParser(NumberParser numberParser) {
+  public InstructionParser(NumberParser numberParser, ParameterParser parameterParser) {
     this.numberParser = numberParser;
+    this.parameterParser = parameterParser;
   }
   
   static {
@@ -126,19 +128,13 @@ public class InstructionParser {
     if (INSTRUCTION_MAP.get(instrName) == null) throw new SyntaxError("Unknown Instruction: " + instrName);
     else data.instrCode = INSTRUCTION_MAP.get(instrName);
 
-    if (!ZERO_PARAM_INSTRUCTIONS.contains(instrName)) {
-      ParameterParser parameterParser = new ParameterParser(instr);
-      processParam(data, offset, parameterParser,0);
-      if (!ONE_PARAM_INSTRUCTIONS.contains(instrName)) {
-        processParam(data, offset, parameterParser,1);
-      }
-    }
+    processParams(instr, data, offset, instrName);
+
     return data;
   }
 
   public long createInstrCode(ParsedInstructionData data, SymbolTable symbolTable, List<EquSymbol> equTable,
                               List<RelocationSymbol> relocationTable) throws SyntaxError {
-    boolean isSymbol = false;
     String relocationSize = "16";
     if (data.shortInstr) relocationSize = "8";
 
@@ -148,59 +144,71 @@ public class InstructionParser {
     data.instrCode = data.instrCode << 2;
 
     for (int i = 0; i < data.params.size(); i++) {
-      data.instrCode = (data.instrCode << 3);
+      data.instrCode = data.instrCode << 3;
       data.instrCode += data.params.get(i).addTypeCode;
-      switch (data.params.get(i).addTypeCode) {
-        case 0: //immediate
-          data.instrCode = (data.instrCode << 5);
-          isSymbol = ifSymbolResolveValue(data.params, symbolTable, equTable, relocationTable, relocationSize, i);
-          addToInstrCode(data, isSymbol, i);
-          break;
-        case 1:
-        case 2: //regdir & regind
-          data.instrCode = (data.instrCode << 4);
-          data.instrCode += data.params.get(i).regCode;
-          data.instrCode = (data.instrCode << 1);
-          if (data.params.get(i).regHigh) data.instrCode += 1;
-          break;
-        case 3:
-        case 4: //reind8 & regind16
-          data.instrCode = (data.instrCode << 4);
-          data.instrCode += data.params.get(i).regCode;
-          data.instrCode = (data.instrCode << 1);
-          isSymbol = ifSymbolResolveValue(data.params, symbolTable, equTable, relocationTable, relocationSize, i);
-          addToInstrCode(data, isSymbol, i);
-          break;
-        case 5: //mem
-          data.instrCode = (data.instrCode << 5);
-          if (data.params.get(i).symbol.length() > 0) {
-            createRelocationEntry(data.params, symbolTable, relocationTable, relocationSize, i);
-            isSymbol = true;
-          }
-          addToInstrCode(data, isSymbol, i);
-      }
+      addParamToInstrCode(data, symbolTable, equTable, relocationTable, relocationSize, i);
     }
+
     return data.instrCode;
   }
 
-  private int indexOfFirstWhitespace(String str) {
-    for(int i = 0; i < str.length(); i++) {
-      if(Character.isWhitespace(str.charAt(i))) {
-        return i;
-      }
+  private void addParamToInstrCode(ParsedInstructionData data, SymbolTable symbolTable, List<EquSymbol> equTable,
+                                   List<RelocationSymbol> relocationTable, String relocationSize, int i) throws SyntaxError {
+    boolean isSymbol = false;
+    switch (data.params.get(i).addTypeCode) {
+      case 0: //immediate
+        data.instrCode = (data.instrCode << 5);
+        isSymbol = ifSymbolResolveValue(data.params, symbolTable, equTable, relocationTable, relocationSize, i);
+        addToInstrCode(data, isSymbol, i);
+        break;
+      case 1:
+      case 2: //regdir & regind
+        data.instrCode = (data.instrCode << 4);
+        data.instrCode += data.params.get(i).regCode;
+        data.instrCode = (data.instrCode << 1);
+        if (data.params.get(i).regHigh) data.instrCode += 1;
+        break;
+      case 3:
+      case 4: //reind8 & regind16
+        data.instrCode = (data.instrCode << 4);
+        data.instrCode += data.params.get(i).regCode;
+        data.instrCode = (data.instrCode << 1);
+        isSymbol = ifSymbolResolveValue(data.params, symbolTable, equTable, relocationTable, relocationSize, i);
+        addToInstrCode(data, isSymbol, i);
+        break;
+      case 5: //mem
+        data.instrCode = (data.instrCode << 5);
+        if (data.params.get(i).symbol.length() > 0) {
+          createRelocationEntry(data.params, symbolTable, relocationTable, relocationSize, i);
+          isSymbol = true;
+        }
+        addToInstrCode(data, isSymbol, i);
     }
-    return -1;
   }
 
-  private void processParam(ParsedInstructionData data, int offset, ParameterParser parameterParser, int paramIndex)
+  private void processParams(String instr, ParsedInstructionData data, int offset, String instrName) throws SyntaxError {
+
+    if (!ZERO_PARAM_INSTRUCTIONS.contains(instrName)) {
+
+      List<String> params = parameterParser.parse(instr);
+
+      processParam(data, offset, params.get(0));
+      updateInstrSize(data, 0);
+      checkFirstParamValidity(data);
+
+      if (!ONE_PARAM_INSTRUCTIONS.contains(instrName)) {
+        processParam(data, offset, params.get(1));
+        updateInstrSize(data, 1);
+      }
+
+    }
+  }
+
+  private void processParam(ParsedInstructionData data, int offset, String param)
       throws SyntaxError {
-    String param = parameterParser.getParam(paramIndex);
     if ("".equals(param)) throw new SyntaxError("Missing Instruction Parameter");
 
     data.params.add(parseParameter(param, offset + data.instrSize, data.shortInstr));
-    if (paramIndex == 0) checkFirstParamValidity(data);
-
-    updateInstrSize(data, paramIndex);
   }
 
   private void updateInstrSize(ParsedInstructionData data, int parameterIndex) {
@@ -366,4 +374,14 @@ public class InstructionParser {
     else paramData.value = numberParser.parseInt(param);
     return paramData;
   }
+
+  private int indexOfFirstWhitespace(String str) {
+    for(int i = 0; i < str.length(); i++) {
+      if(Character.isWhitespace(str.charAt(i))) {
+        return i;
+      }
+    }
+    return -1;
+  }
+
 }

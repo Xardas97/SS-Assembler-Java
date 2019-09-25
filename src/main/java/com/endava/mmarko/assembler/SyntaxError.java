@@ -7,11 +7,11 @@ public class SyntaxError extends Exception {
     super(message);
   }
 
-  public String getLine() {
+  String getLine() {
     return line;
   }
 
-  public void setLine(String line) {
+  void setLine(String line) {
     this.line = line;
   }
 }
