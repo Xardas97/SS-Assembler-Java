@@ -1,14 +1,13 @@
 package com.endava.mmarko.assembler.parsers;
 
 import com.endava.mmarko.assembler.SyntaxError;
+import com.endava.mmarko.assembler.tables.EquSymbol;
 import com.endava.mmarko.assembler.tables.Symbol;
 import com.endava.mmarko.assembler.tables.SymbolTable;
-import com.endava.mmarko.assembler.tables.EquSymbol;
 import com.endava.mmarko.assembler.tables.RelocationSymbol;
+import java.util.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-
-import java.util.*;
 
 @Component
 public class InstructionParser {
@@ -208,7 +207,8 @@ public class InstructionParser {
       throws SyntaxError {
     if ("".equals(param)) throw new SyntaxError("Missing Instruction Parameter");
 
-    data.params.add(parseParameter(param, offset + data.instrSize, data.shortInstr));
+    Parameter paramStruct = parseParameter(param, offset + data.instrSize, data.shortInstr);
+    data.params.add(paramStruct);
   }
 
   private void updateInstrSize(ParsedInstructionData data, int parameterIndex) {
@@ -294,7 +294,7 @@ public class InstructionParser {
     }
 
     if (firstChar == '$') {
-      return getRegindParameter(param, paramData, shortInstr);
+      return getPcRelParam(param, paramData, shortInstr);
     }
 
     if (firstChar == '*') {
@@ -360,7 +360,7 @@ public class InstructionParser {
     return false;
   }
 
-  private Parameter getRegindParameter(String param, Parameter paramData, boolean shortInstr) {
+  private Parameter getPcRelParam(String param, Parameter paramData, boolean shortInstr) {
     if (shortInstr) paramData.addTypeCode = ADDRESSING_MAP.get("regind8");
     else paramData.addTypeCode = ADDRESSING_MAP.get("regind16");
     paramData.pcRel = true;

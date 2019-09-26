@@ -4,7 +4,7 @@ public class SectionLocation {
   private int id;
   private int offset;
 
-  SectionLocation() {
+  public SectionLocation() {
     this.id = -1;
     this.offset = 0;
   }

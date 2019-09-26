@@ -1,10 +1,9 @@
 package com.endava.mmarko.assembler;
 
 import com.endava.mmarko.assembler.config.TwoPassAssemblerConfig;
+import java.io.IOException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.AnnotationConfigApplicationContext;
-
-import java.io.IOException;
 
 public class App {
   public static void main(String[] args) {
@@ -24,7 +23,7 @@ public class App {
     } catch (IOException e) {
       System.out.println("Bad Files");
     } catch (SyntaxError e) {
-      System.out.println( "SYNTAX ERROR in line: " + e.getLine() + "\n");
+      System.out.println("SYNTAX ERROR in line: " + e.getLine() + "\n");
       System.out.println(e.getMessage() + "\n");
     }
   }
